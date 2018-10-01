@@ -1,2 +1,2 @@
-# human-readable-numbers-app
+# Human Readable Numbers Demo
 Simplest web application example.

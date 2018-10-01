@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Meta information -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Simplest web application example: client-only.">
+        <title>Human Readable Numbers Demo</title>
+        <!-- Stylesheets -->
+        <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <style type="text/css">
+            html, body {
+                height: 100%;
+            }
+            body {
+                background: #70e1f5;  /* fallback for old browsers */
+                background: -webkit-linear-gradient(to bottom, #ffd194, #70e1f5);  /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to bottom, #ffd194, #70e1f5); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                color: #333;
+            }
+            .container {
+                min-height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .form-control, .card {
+                background-color: #f5fffa; /* mintcream */
+            }
+            a.disabled {
+                color: gray;
+                pointer-events: none;
+            }
+            .invalid-feedback.hidden {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Page content -->
+        <div class="container">
+            <div class="row justify-content-center mb-2">
+                <div class="col-auto text-center">
+                    <p class="h3">Human Readable Numbers Demo</p>
+                    <p>Print numbers in human readable format according to <a href="https://physics.nist.gov/cuu/Units/prefixes.html" rel="noopener noreferrer" target="_blank">SI prefixes</a>.<br/><em>Expects a number in range of 1e-24 to 1e+27.</em></p>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-auto">
+                    <form class="form-group" style="width: 20rem;">
+                        <input type="text" class="form-control" id="inputNumber" placeholder="Print a number">
+                        <div class="invalid-feedback hidden" id="inputInvalidFeedback">
+                            Please provide a valid number.
+                        </div>
+                    </form>
+                    <div class="card" style="width: 20rem;">
+                        <div class="card-body">
+                            <p class="h5 card-title">Result</p>
+                            <p class="card-text" id="cardText">Number will be presented in readable format.</p>
+                            <a href="javascript:void(0);" class="card-link disabled" id="cardLinkCopy">Copy to clipboard</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- JavaScript -->
+        <script defer src="../node_modules/human-readable-numbers/dist/index.min.js"></script>
+        <script type="text/javascript">
+            window.addEventListener('load', function(e) {
+                /**
+                 * Replace placeholders in text by data.
+                 * 
+                 * @param {string} text
+                 * @param {object} data
+                 * @returns {string}
+                 */
+                function replace(text, data) {
+                    return text.replace(/{(\w+)}/g, function(match, key) {
+                        return data[key]; 
+                    });
+                }
+                
+                /**
+                 * Validate passed number before presenting.
+                 * 
+                 * @param {number} number
+                 * @returns {boolean}
+                 */
+                function validateNumber(number) {
+                    if (isNaN(number)) {
+                        return false;
+                    }
+                    var absNumber = Math.abs(number);
+                    return absNumber === 0 || (absNumber >= 1e-24 && absNumber < 1e27);
+                }
+                
+                /**
+                 * Copy text to clipboard via temporary DOM-element.
+                 * 
+                 * @param {string} text
+                 */
+                function copyToClipboard(text) {
+                    var el = document.createElement('textarea');
+                    el.value = text;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                }
+                
+                // cache necessary DOM-elements
+                var elInputNumber = document.getElementById('inputNumber');
+                var elInputInvalidFeedback = document.getElementById('inputInvalidFeedback');
+                var elCardText = document.getElementById('cardText');
+                var elCardLinkCopy = document.getElementById('cardLinkCopy');
+                // init variables
+                var number, readable;
+                var isValid = false;
+                
+                // add controls
+                elInputNumber.addEventListener('keyup', function(e) {
+                    number = parseFloat(elInputNumber.value);
+                    isValid = validateNumber(number);
+                    readable = isValid ? HRNumbers.toHumanString(number) : '';
+                    
+                    elInputNumber.classList.toggle('is-invalid', !isValid);
+                    elInputInvalidFeedback.classList.toggle('hidden', isValid);
+                    if (isValid) {
+                        elCardText.innerHTML = replace('Number <mark>{number}</mark> can be presented in readable format as <strong>{readable}</strong>.', {
+                            number: number,
+                            readable: readable
+                        });
+                    } else {
+                        elCardText.innerHTML = 'Number will be presented in readable format.';
+                    }
+                    elCardLinkCopy.classList.toggle('disabled', !isValid);
+                });
+                elCardLinkCopy.addEventListener('click', function(e) {
+                    if (isValid) {
+                        copyToClipboard(readable);
+                    }
+                });
+                // start
+                elInputNumber.focus();
+            });
+        </script>
+    </body>
+</html>
