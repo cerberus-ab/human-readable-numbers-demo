@@ -15,6 +15,7 @@
   "homepage": "https://github.com/cerberus-ab/human-readable-numbers-demo#readme",
   "dependencies": {
     "bootstrap": "^4.1.3",
+    "express": "^4.16.3",
     "human-readable-numbers": "^0.9.3"
   }
 }
