@@ -31,9 +31,6 @@
                 color: gray;
                 pointer-events: none;
             }
-            .invalid-feedback.hidden {
-                display: none;
-            }
         </style>
     </head>
     <body>
@@ -47,11 +44,9 @@
             </div>
             <div class="row justify-content-center">
                 <div class="col-auto">
-                    <form class="form-group" style="width: 20rem;">
+                    <form class="form-group mb-2" style="width: 20rem;" onsubmit="return false;">
                         <input type="text" class="form-control" id="inputNumber" placeholder="Print a number">
-                        <div class="invalid-feedback hidden" id="inputInvalidFeedback">
-                            Please provide a valid number.
-                        </div>
+                        <div class="invalid-feedback">Please provide a valid number.</div>
                     </form>
                     <div class="card" style="width: 20rem;">
                         <div class="card-body">
@@ -110,7 +105,6 @@
                 
                 // cache necessary DOM-elements
                 var elInputNumber = document.getElementById('inputNumber');
-                var elInputInvalidFeedback = document.getElementById('inputInvalidFeedback');
                 var elCardText = document.getElementById('cardText');
                 var elCardLinkCopy = document.getElementById('cardLinkCopy');
                 // init variables
@@ -124,7 +118,6 @@
                     readable = isValid ? HRNumbers.toHumanString(number) : '';
                     
                     elInputNumber.classList.toggle('is-invalid', !isValid);
-                    elInputInvalidFeedback.classList.toggle('hidden', isValid);
                     if (isValid) {
                         elCardText.innerHTML = replace('Number <mark>{number}</mark> can be presented in readable format as <strong>{readable}</strong>.', {
                             number: number,
@@ -136,9 +129,7 @@
                     elCardLinkCopy.classList.toggle('disabled', !isValid);
                 });
                 elCardLinkCopy.addEventListener('click', function(e) {
-                    if (isValid) {
-                        copyToClipboard(readable);
-                    }
+                    copyToClipboard(readable);
                 });
                 // start
                 elInputNumber.focus();

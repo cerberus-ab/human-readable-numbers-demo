@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Meta information -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Simplest web application example: client-server.">
+        <title>Human Readable Numbers Demo</title>
+        <!-- Stylesheets -->
+        <link rel="stylesheet" href="/libs/bootstrap/dist/css/bootstrap.min.css">
+        <style type="text/css">
+            html, body {
+                height: 100%;
+            }
+            body {
+                background: #005aa7;  /* fallback for old browsers */
+                background: -webkit-linear-gradient(to bottom, #fffde4, #005aa7);  /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to bottom, #fffde4, #005aa7); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                color: #333;
+            }
+            .container {
+                min-height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .form-control:not(:-moz-read-only), .form-control:not(:-moz-read-only):focus, 
+            .form-control:not(:read-only), .form-control:not(:read-only):focus, 
+            .card {
+                background-color: #f5fffa; /* mintcream */
+            }
+            a.disabled {
+                color: gray;
+                pointer-events: none;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Page content -->
+        <div class="container">
+            <div class="row justify-content-center mb-2">
+                <div class="col-auto text-center">
+                    <p class="h3">Human Readable Numbers Demo</p>
+                    <p>Print numbers in human readable format according to <a href="https://physics.nist.gov/cuu/Units/prefixes.html" rel="noopener noreferrer" target="_blank">SI prefixes</a>.<br/><em>Expects a number in range of 1e-24 to 1e+27.</em></p>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-auto">
+                    <form class="form-row mb-2 ml-0 mr-0" style="width: 20rem;" onsubmit="return false;">
+                        <div class="col-8 pl-0 pr-0">
+                            <input type="text" class="form-control" id="inputNumber" placeholder="Print a number">
+                            <div class="invalid-feedback">Please provide a valid number.</div>
+                        </div>
+                        <div class="col-4 pl-2 pr-0">
+                            <button type="button" class="btn btn-primary" style="width: 100%;" id="btnSubmit">Confirm</button>
+                        </div>
+                    </form>
+                    <div class="card" style="width: 20rem;">
+                        <div class="card-body">
+                            <p class="h5 card-title">Result</p>
+                            <p class="card-text" id="cardText">Number will be presented in readable format.</p>
+                            <a href="javascript:void(0);" class="card-link disabled" id="cardLinkCopy">Copy to clipboard</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- JavaScript -->
+        <script defer src="/libs/whatwg-fetch/dist/fetch.umd.js"></script>
+        <script type="text/javascript">
+            window.addEventListener('load', function(e) {
+                /**
+                 * Replace placeholders in text by data.
+                 * 
+                 * @param {string} text
+                 * @param {object} data
+                 * @returns {string}
+                 */
+                function replace(text, data) {
+                    return text.replace(/{(\w+)}/g, function(match, key) {
+                        return data[key]; 
+                    });
+                }
+                
+                /**
+                 * Copy text to clipboard via temporary DOM-element.
+                 * 
+                 * @param {string} text
+                 */
+                function copyToClipboard(text) {
+                    var el = document.createElement('textarea');
+                    el.value = text;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                }
+                
+                /**
+                 * Function creates app state and provides public api.
+                 *
+                 * @returns {object} set, onSet
+                 */
+                function initState() {
+                    var data = { status: 'idle' };
+                    var listeners = [];
+                    
+                    return {
+                        set: function(newData) {
+                            data = Object.assign({}, newData);
+                            listeners.forEach(function(listener) {
+                                listener(data);
+                            });
+                        },
+                        onSet: function(callback) {
+                            listeners.push(callback); 
+                        },
+                        getReadable: function() {
+                            if (typeof data.readable != 'string') {
+                                return;
+                            }
+                            return data.readable;
+                        }
+                    };
+                }
+                
+                /**
+                 * Submit a value for state by fetching.
+                 * 
+                 * @param {object} state, Created by initState
+                 * @param {string} value
+                 */
+                function submitFor(state, value) {
+                    state.set({ value: value, status: 'loading' });
+                    
+                    fetch('/api?number=' + value, {
+                        headers: { 'Accept': 'application/json' }
+                    }).then(function(response) {
+                        if (response.status === 200) {
+                            return response.json();
+                        } else {
+                            throw new Error(response.statusText);
+                        }
+                    }).then(function(data) {
+                        state.set({ value: value, status: 'success', number: data.number, readable: data.readable });
+                    }).catch(function(error) {
+                        state.set({ value: value, status: 'failure', message: error.message });
+                    });
+                }
+                
+                /**
+                 * Set idle status for state.
+                 * 
+                 * @param {object} state, Created by initState
+                 * @param {string} value
+                 */
+                function idleFor(state, value) {
+                    state.set({ value: typeof value !== 'undefined' ? value : '', status: 'idle' });
+                }
+                
+                // cache necessary DOM-elements
+                var elInputNumber = document.getElementById('inputNumber');
+                var elBtnSubmit = document.getElementById('btnSubmit');
+                var elCardText = document.getElementById('cardText');
+                var elCardLinkCopy = document.getElementById('cardLinkCopy');
+                
+                // init the state
+                var state = initState();
+                state.onSet(function(data) {
+                    elInputNumber.classList.toggle('is-invalid', data.status === 'failure');
+                    elInputNumber.readOnly = data.status === 'loading';
+                    elBtnSubmit.classList.toggle('disabled', data.status === 'loading');
+                    if (data.status === 'success') {
+                        elCardText.innerHTML = replace('Number <mark>{number}</mark> can be presented in readable format as <strong>{readable}</strong>.', data);
+                    } else {
+                        elCardText.innerHTML = 'Number will be presented in readable format.';
+                    }
+                    elCardLinkCopy.classList.toggle('disabled', data.status !== 'success');
+                });
+                
+                // add controls
+                elInputNumber.addEventListener('keyup', function(e) {
+                    if (elInputNumber.readOnly) {
+                        return;
+                    }
+                    if (e.keyCode === 13) {
+                        submitFor(state, elInputNumber.value);
+                    } else {
+                        idleFor(state, elInputNumber.value);
+                    }
+                });
+                elBtnSubmit.addEventListener('click', function(e) {
+                    submitFor(state, elInputNumber.value);
+                });
+                elCardLinkCopy.addEventListener('click', function(e) {
+                    copyToClipboard(state.getReadable());
+                });
+                
+                // start
+                elInputNumber.focus();
+            });
+        </script>
+    </body>
+</html>

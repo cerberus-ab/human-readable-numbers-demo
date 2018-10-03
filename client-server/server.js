@@ -1,9 +1,11 @@
+const path = require('path');
 const express = require('express');
 const HRNumbers = require('human-readable-numbers');
 
 const app = express();
 const port = 3000;
 const apiRouter = express.Router();
+const apiDelay = 2000; // intentional latency
 
 /**
  * Validate passed number before presenting.
@@ -19,19 +21,22 @@ function validateNumber(number) {
     return absNumber === 0 || (absNumber >= 1e-24 && absNumber < 1e27);
 }
 
-// hello page
-app.get('/', (request, response) => response.send('Hello, server is ready!'));
+// index page and resources
+app.get('/', (request, response) => 
+        response.sendFile(path.resolve(__dirname, 'index.html')));
+app.use('/libs', express.static(path.resolve(__dirname, '../node_modules')));
 
 // api router
 app.use('/api', apiRouter);
 apiRouter.get('/', (request, response) => {
     let number = parseFloat(request.query.number);
-    
-    if (validateNumber(number)) {
-        response.json({ number, readable: HRNumbers.toHumanString(number) });
-    } else {
-        response.sendStatus(400);
-    }
+    setTimeout(() => {
+        if (validateNumber(number)) {
+            response.json({ number, readable: HRNumbers.toHumanString(number) });
+        } else {
+            response.sendStatus(400);
+        }
+    }, apiDelay);
 });
 
 // set the server
