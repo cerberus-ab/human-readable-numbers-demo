@@ -25,6 +25,6 @@ You will see the initial output:
 ```bash
 Server started on port 3000
 ```
-And then go to `localhost:3000` in the URL bar in a browser.
+And then go to *localhost:3000* in the URL bar in a browser.
 
 ![Preview](img/preview-client-server.png)

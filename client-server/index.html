@@ -116,7 +116,7 @@
                             listeners.push(callback); 
                         },
                         getReadable: function() {
-                            if (typeof data.readable != 'string') {
+                            if (typeof data.readable !== 'string') {
                                 return;
                             }
                             return data.readable;
@@ -183,7 +183,7 @@
                     if (elInputNumber.readOnly) {
                         return;
                     }
-                    if (e.keyCode === 13) {
+                    if (e.key === 13) {
                         submitFor(state, elInputNumber.value);
                     } else {
                         idleFor(state, elInputNumber.value);
