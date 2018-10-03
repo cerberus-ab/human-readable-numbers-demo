@@ -1,7 +1,7 @@
 # Human Readable Numbers Demo
 Simplest web application example for opening part of web development workshop.
 
-Contains of two variations of application that carry out the same task, but the first is [client-only](#client-only) and the second is [client-server](#client-server). The task is calculate and print out human readable representation of a number using a foreign library.
+Contains of two variations of application that carry out the same task, but the first is [client-only](#client-only) and the second is [client-server](#client-server). The task is calculate and print out human readable representation of a number using a [foreign library](https://github.com/cerberus-ab/human-readable-numbers).
 
 ## Before start
 Make sure you have [node.js](https://nodejs.org/en/download/) v6 or latest.
