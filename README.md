@@ -12,9 +12,19 @@ npm i
 ```
 
 ## Client-only
+Just open [client-only/index.html](client-only/index.html) in a browser.
+
 ![Preview](img/preview-client-only.png)
 
-Just open [index.html](client-only/index.html) in a browser.
-
 ## Client-server
-*coming soon*
+Start the [server](client-server/server.js) using node:
+```bash
+node client-server/server.js
+```
+You will see the initial output:
+```bash
+Server started on port 3000
+```
+And then go to `localhost:3000` in the URL bar in a browser.
+
+![Preview](img/preview-client-server.png)
